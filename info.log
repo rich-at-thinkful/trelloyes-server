@@ -1,0 +1,5 @@
+{"message":"Unauthorized request to path: /","level":"error"}
+{"message":"Unauthorized request to path: /","level":"error"}
+{"message":"Card with id 999 not found.","level":"error"}
+{"message":"Title is required","level":"error"}
+{"message":"Card with id b045dfeb-d351-4779-a75b-66e8a40ccae6 created","level":"info"}
