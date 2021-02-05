@@ -5,8 +5,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 
 const { NODE_ENV } = require('./config');
-const cardRouter = require('./cardRouter');
-const listRouter = require('./listRouter');
+const cardRouter = require('./cards/cardRouter');
+const listRouter = require('./lists/listRouter');
 const validateBearerToken = require('./middleware/validateBearerToken');
 
 const app = express();
@@ -30,12 +30,12 @@ app.use('/list', listRouter);
 app.use(function errorHandler(error, req, res, next) { // eslint-disable-line no-unused-vars
   let response;
   if (NODE_ENV === 'production') {
-    response = { error: { message: 'server error' } };
+    response = { message: 'Internal server error' };
   } else {
     console.error(error);
-    response = { message: error.message, error };
+    response = { message: error.message };
   }
-  res.status(500).json(response);
+  res.status(error.status).json(response);
 });
 
 module.exports = app;

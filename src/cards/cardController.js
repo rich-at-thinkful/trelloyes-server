@@ -1,48 +1,58 @@
-const express = require('express');
 const uuid = require('uuid/v4');
+const { cards, lists } = require('../dataStore');
+const logger = require('../logger');
 
-const { cards, lists } = require('./dataStore');
-const logger = require('./logger');
-
-const cardRouter = express.Router();
-
-cardRouter.get('/', (req, res) => {
-  res
-    .json(cards);
-});
-
-cardRouter.get('/:id', (req, res) => {
+function cardExists(req, res, next) {
   const { id } = req.params;
   const card = cards.find(c => c.id === id);
 
   // make sure we found a card
-  if(!card) {
+  if (!card) {
     logger.error(`Card with id ${id} not found.`);
-    return res
-      .status(404)
-      .send('Card Not Found');
+    return next({
+      status: 404,
+      message: 'Card not found'
+    });
   }
 
-  res.json(card);
-});
+  next();
+}
 
-cardRouter.post('/', (req, res) => {
+function hasValidCardData(req, res, next) {
   const { title, content } = req.body;
 
   if(!title) {
     logger.error(`Title is required`);
-    return res
-      .status(400)
-      .send('Invalid data');
+    return next({
+      status: 400,
+      message: 'Requires title'
+    });
   }
 
   if(!content) {
     logger.error(`Content is required`);
-    return res
-      .status(400)
-      .send('Invalid data');
+    return next({
+      status: 400,
+      message: 'Requires content'
+    });
   }
 
+  next();
+}
+
+function list(req, res) {
+  res
+    .json(cards);
+}
+
+function read(req, res) {
+  const { id } = req.params;
+  const card = cards.find(c => c.id === id);
+  res.json(card);
+}
+
+function create(req, res) {
+  const { title, content } = req.body;
   const id = uuid();
 
   const card = {
@@ -59,19 +69,13 @@ cardRouter.post('/', (req, res) => {
     .status(201)
     .location(`http://localhost:8000/card/${id}`)
     .json({id});
-});
 
-cardRouter.delete('/:id', (req, res) => {
+}
+
+function destroy(req, res) {
   const { id } = req.params;
 
   const cardIndex = cards.findIndex(c => c.id === id);
-
-  if( cardIndex === -1) {
-    logger.error(`Card with id ${id} not found.`);
-    return res
-      .status(404)
-      .send('Not found');
-  }
 
   //remove card from lists
   //assume cardIds are not duplicated in the cardIds array
@@ -86,7 +90,12 @@ cardRouter.delete('/:id', (req, res) => {
 
   res
     .status(204)
-    .end();
-});
+    .end();  
+}
 
-module.exports = cardRouter;
+module.exports = {
+  list,
+  read: [cardExists, read],
+  create: [hasValidCardData, create],
+  destroy: [cardExists, destroy],
+};
