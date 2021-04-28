@@ -33,16 +33,41 @@ app.use(cors());
 app.use(helmet());
 app.use(express.json());
 
-const cards = [{
-  id: 1,
-  title: 'Task One',
-  content: 'This is card one'
-}];
-const lists = [{
-  id: 1,
-  header: 'List One',
-  cardIds: [1]
-}];
+const cards = [
+  {
+    id: "cda12d01-3f48-4035-ad54-3173842feb36",
+    title: "Go to store",
+    content: "Pick up the shopping",
+  },
+  {
+    id: "f6110166-c7ad-4640-84df-b033724eec25",
+    title: "Rewatch Lord of the Rings",
+    content: "But skip the lame Hobbit movies",
+  },
+  {
+    id: "29f23668-b673-4c3e-b2dc-beb363893855",
+    title: "Do TPS reports",
+    content: "However, I'm not going to be working on Saturday",
+  },
+  {
+    id: "abde6c49-0ed1-4d33-ab62-d6081c130316",
+    title: "Order printer cartridges",
+    content: "I don't remember the last time I printed anything",
+  },
+];
+
+const lists = [
+  {
+    id: "586f5e98-a4ab-4ad0-91eb-9dd872506362",
+    header: 'Home',
+    cardIds: [1, 2]
+  },
+  {
+    id: "cce57fa3-a847-423c-be32-407714b9ad42",
+    header: 'Work',
+    cardIds: [3, 4]
+  },
+];
 
 app.use(function validateBearerToken(req, res, next) {
   const apiToken = process.env.API_TOKEN;
@@ -199,14 +224,8 @@ app.delete('/list/:id', (req, res) => {
 
 
 app.use(function errorHandler(error, req, res, next) {
-  let response;
-  if (NODE_ENV === 'production') {
-    response = { error: { message: 'server error ' }};
-  } else {
-    console.error(error);
-    response = { message: error.message, error };
-  }
-  res.status(500).json(response);
+  console.error(error);
+  res.status(error.status || 500).json({ error: error.message });
 });
 
 module.exports = app;
